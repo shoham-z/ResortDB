@@ -4,35 +4,35 @@ drop table Orders;
 drop table Client;
 
 create table if not exists Room(
-    RoomId INTEGER NOT NULL PRIMARY KEY,
-    NumWindows INTEGER NOT NULL,
-    MaxPeople INTEGER NOT NULL,
-    Price INTEGER NOT NULL
+    room_id INTEGER NOT NULL PRIMARY KEY,
+    num_windows INTEGER NOT NULL,
+    max_people INTEGER NOT NULL,
+    price INTEGER NOT NULL
 );
 
 create table if not exists Client(
-  ClientId NUMERIC(9, 0) primary key,
-  ClientName varchar(30),
-  EntryDate DATE,
-  Cost INTEGER
+  client_id NUMERIC(9, 0) primary key,
+  client_name varchar(30),
+  entry_date DATE,
+  cost INTEGER
 );
 
 create table if not exists Orders(
     client_id INTEGER,
     room_id INTEGER,
     order_price INTEGER,
-    FOREIGN KEY (client_id) REFERENCES Client(ClientId),
-    FOREIGN KEY (room_id) REFERENCES Room(RoomId)
+    FOREIGN KEY (client_id) REFERENCES Client(client_id),
+    FOREIGN KEY (room_id) REFERENCES Room(room_id)
 );
 
 
 
 CREATE TABLE if not exists MaintenanceEmp (
-    EmpNumber INT NOT NULL,
-    EmpName VARCHAR(20) NOT NULL,
-    RoomId INTEGER,
-    HireDate DATETIME,
-    Salary NUMERIC(7,2) NOT NULL,
-    UNIQUE (EmpNumber, EmpName),
-    FOREIGN KEY (RoomId) REFERENCES Room(RoomId)
+    emp_number INT NOT NULL,
+    emp_name VARCHAR(20) NOT NULL,
+    room_id INTEGER,
+    hire_date DATETIME,
+    salary NUMERIC(7,2) NOT NULL,
+    UNIQUE (emp_number, emp_name),
+    FOREIGN KEY (room_id) REFERENCES Room(room_id)
 );
