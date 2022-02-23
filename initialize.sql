@@ -21,8 +21,8 @@ create table if not exists Orders(
     client_id INTEGER,
     room_id INTEGER,
     order_price INTEGER,
-    FOREIGN KEY (client_id) REFERENCES Client(client_id),
-    FOREIGN KEY (room_id) REFERENCES Room(room_id)
+    FOREIGN KEY (client_id) REFERENCES Client(client_id)
+
 );
 
 
