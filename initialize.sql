@@ -17,9 +17,13 @@ create table if not exists Client(
   Cost INTEGER
 );
 
-create table Orders AS
-    SELECT ClientId, RoomId
-    FROM Client AS C, Room;
+create table if not exists Orders(
+    client_id INTEGER,
+    room_id INTEGER,
+    order_price INTEGER,
+    FOREIGN KEY (client_id) REFERENCES Client(ClientId),
+    FOREIGN KEY (room_id) REFERENCES Room(RoomId)
+);
 
 
 
