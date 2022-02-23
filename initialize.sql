@@ -13,18 +13,16 @@ create table if not exists Room(
 create table if not exists Client(
   client_id NUMERIC(9, 0) primary key,
   client_name varchar(30),
-  entry_date DATE,
-  cost INTEGER
+  entry_date DATE
 );
+insert into client values (242525634, 'example name', '2019-03-23');
 
 create table if not exists Orders(
     client_id INTEGER,
     room_id INTEGER,
     order_price INTEGER,
     FOREIGN KEY (client_id) REFERENCES Client(client_id)
-
 );
-
 
 
 CREATE TABLE if not exists MaintenanceEmp (
