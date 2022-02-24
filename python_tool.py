@@ -39,7 +39,7 @@ client_name_list = ['David Joyner', 'David Zuber', 'Brenton Joyner',
 for client_name in client_name_list:
     client_id = random.randrange(2123423, 3562352, 201)
     date = str(random_date(date1, date2))[:10]
-    command = 'INSERT INTO Client values'+'(' + str(client_id) + "," + chr(39) + client_name + chr(39) + ',' + chr(39) + date + chr(39) + ')'
+    command = 'INSERT INTO Client values'+'(' + str(client_id) + "," + "\'" + client_name + "\'" + ',' + chr(39) + date + chr(39) + ')'
     cursor.execute(command)
 
 # Display data inserted
