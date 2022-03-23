@@ -1,0 +1,6 @@
+all the empty rooms
+
+all the names of male customers over 60 yo
+
+all the maintenance emps who have no rooms assigned
+
