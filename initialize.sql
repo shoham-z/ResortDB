@@ -18,10 +18,8 @@ CREATE TABLE MaintenanceEmp (
     emp_name varchar(30),
     age INT,
     isMale BIT NOT NULL,
-    room_id INT,
     salary INT NOT NULL,
-    constraint id_key PRIMARY KEY (emp_id),
-    CONSTRAINT FOREIGN KEY (room_id) REFERENCES Room(room_id) ON DELETE CASCADE
+    constraint id_key PRIMARY KEY (emp_id)
 );
 
 CREATE TABLE RoomOrder(
