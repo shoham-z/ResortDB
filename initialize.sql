@@ -32,7 +32,7 @@ CREATE TABLE RoomOrder(
     CONSTRAINT FOREIGN KEY (customer_id) REFERENCES Customer(client_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Maintane(
+CREATE TABLE Maintain(
     room_id INT,
     emp_id INT,
     CONSTRAINT FOREIGN KEY (room_id)

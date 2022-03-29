@@ -4,6 +4,7 @@ create table if not exists Room(
     max_people INT NOT NULL,
     price INT NOT NULL
 );
+
 create table Customer(
   client_id INT,
   client_name varchar(30),
@@ -11,6 +12,7 @@ create table Customer(
   isMale BIT NOT NULL,
     constraint id_key PRIMARY KEY (client_id)
 );
+
 CREATE TABLE MaintenanceEmp (
     emp_id INT,
     emp_name varchar(30),
@@ -21,15 +23,17 @@ CREATE TABLE MaintenanceEmp (
     constraint id_key PRIMARY KEY (emp_id),
     CONSTRAINT FOREIGN KEY (room_id) REFERENCES Room(room_id) ON DELETE CASCADE
 );
+
 CREATE TABLE RoomOrder(
     OrderId INT,
     amount INT,
-    room_id INT,
+    room_number INT,
     customer_id INT,
     constraint id PRIMARY KEY (OrderId),
-    CONSTRAINT FOREIGN KEY (room_id) REFERENCES Room(room_id) ON DELETE CASCADE,
+    CONSTRAINT FOREIGN KEY (room_number) REFERENCES Room(room_id) ON DELETE CASCADE,
     CONSTRAINT FOREIGN KEY (customer_id) REFERENCES Customer(client_id) ON DELETE CASCADE
 );
+
 CREATE TABLE Maintane(
     room_id INT,
     emp_id INT,
@@ -40,16 +44,20 @@ CREATE TABLE Maintane(
 );
 
 
-CREATE TABLE oldMales(client_name varchar(30));
-INSERT INTO oldMAles SELECT client_name FROM Customer
+
+SELECT client_name
+FROM Customer
 WHERE Customer.age > 60 and Customer.isMale = 1;
 
-CREATE TABLE emptyRooms(roomId INT);
-INSERT INTO emptyRooms SELECT room_id
+SELECT room_id
 FROM Room
-WHERE NOT EXISTS (SELECT room_id FROM Room);
+WHERE NOT EXISTS (SELECT room_id FROM RoomOrder);
 
 CREATE TABLE toAssign(emp_id INT);
-INSERT INTO toAssign SELECT emp_id
-FROM MaintenanceEmp
-WHERE NOT EXISTS(SELECT emp_id FROM Maintane);
+SELECT emp_name
+FROM MaintenanceEmp ME
+WHERE NOT EXISTS(SELECT emp_id FROM Maintane M WHERE ME.emp_id != M.emp_id);
+
+SELECT emp_name
+FROM MaintenanceEmp ME
+WHERE emp_id NOT IN (SELECT emp_id FROM MaintenanceEmp NATURAL JOIN Maintane)
