@@ -1,4 +1,4 @@
-create table if not exists Room(
+create table Room(
     room_id INT NOT NULL PRIMARY KEY,
     name varchar(30),
     max_people INT NOT NULL,
@@ -6,11 +6,11 @@ create table if not exists Room(
 );
 
 create table Customer(
-  client_id INT,
-  client_name varchar(30),
+  customer_id INT,
+  customer_name varchar(30),
   age INT,
   isMale BIT NOT NULL,
-    constraint id_key PRIMARY KEY (client_id)
+    constraint id_key PRIMARY KEY (customer_id)
 );
 
 CREATE TABLE MaintenanceEmp (
@@ -29,7 +29,7 @@ CREATE TABLE RoomOrder(
     customer_id INT,
     constraint id PRIMARY KEY (OrderId),
     CONSTRAINT FOREIGN KEY (room_number) REFERENCES Room(room_id) ON DELETE CASCADE,
-    CONSTRAINT FOREIGN KEY (customer_id) REFERENCES Customer(client_id) ON DELETE CASCADE
+    CONSTRAINT FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Maintain(
