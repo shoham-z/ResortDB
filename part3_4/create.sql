@@ -65,7 +65,7 @@ CREATE TABLE suppliers_orders(
 
 CREATE TABLE dish_prices(
     dish_name VARCHAR(30) NOT NULL ,
-    price INT(1) NOT NULL ,
+    price FLOAT(1) NOT NULL ,
     rating INT (1) NOT NULL ,
     CONSTRAINT PRIMARY KEY (dish_name)
 );
