@@ -28,8 +28,12 @@ FROM Room R
 WHERE NOT EXISTS (SELECT room_id FROM RoomOrder O
                     WHERE R.room_id = O.room_number);
 
-
 -- all the ingredients that are in low stock and used in 4.5+ star meals
 SELECT prod_name
 FROM ingredients I NATURAL JOIN dish_details DD NATURAL JOIN dish_prices DP
 where rating > 4.5 and amount < 10 and prodname NOT IN (SELECT prod_name FROM suppliers_orders);
+
+--all the employees that work at shabbat and have no rooms assigned
+SELECT emp_name
+FROM Employee E
+WHERE role = "maintain rooms" and emp_id NOT IN (SELECT emp_id FROM MaintenanceEmp NATURAL JOIN Maintain);
