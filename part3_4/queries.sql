@@ -16,3 +16,8 @@ WHERE customer_name IN
                        NATURAL JOIN
                    (SELECT customer_name
                     FROM diningroomorder) as DRO)));
+
+-- all the names of female customers less than 30 yo that ordered a dinner
+SELECT customer_name, age, room_number
+FROM Customer C NATURAL JOIN RoomOrder O
+WHERE age < 30 and isMale = 1 and C.customer_name in (SELECT name From diningRoomOrder);
