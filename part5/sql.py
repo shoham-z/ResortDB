@@ -14,10 +14,11 @@ def execute(command: str):
             cursor = connection.cursor()
             cursor.execute(command)
             result = cursor.fetchall()
-            print("Total number of rows in table: ", cursor.rowcount)
-            print(result)
+            print("Total number output rows: ", cursor.rowcount)
+            connection.commit()
             connection.close()
-            return True
+            return result
     except Error as e:
-        print("Error while connecting to MySQL", e)
-        return False
+        response = "Error while connecting to MySQL" + str(e)
+        print(response)
+        return response
