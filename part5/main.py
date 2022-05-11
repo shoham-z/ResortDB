@@ -176,7 +176,7 @@ def update():
                 window.extend_layout(window, [[sg.Text('Table does not exist')]])
         elif event == "update":
             print(values)
-            fn(dict(zip(attributes, [values["-" + att + "-"] if for att in attributes])), values["-Table-"])
+            fn(dict(zip(attributes, [values["-" + att + "-"] for att in attributes])), values["-Table-"])
             updated_successfully = True
             pop_up_window("Data Updated Successfully")
         if updated_successfully:
