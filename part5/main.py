@@ -3,6 +3,11 @@ from sql import execute
 
 
 def pop_up_window(message):
+    """
+    Creates a new pop-up window with notification to the user
+    :param message: The notification
+    :return: None
+    """
     layout2 = [[sg.Text(text=message), sg.Button(button_text="Close", enable_events=True)]]
     window2 = sg.Window(message, layout2)
 
@@ -13,27 +18,51 @@ def pop_up_window(message):
     window2.close()
 
 
-def get_data_base_structure():
+def get_data_base_structure() -> str:
+    """
+    Gets the tables' structure in the database
+    :return: list of the structure of the tables
+    """
     structure = ""
     for table in get_data_base_tables():
         structure += get_table_structure(table)
     return structure
 
 
-def get_data_base_tables():
+def get_data_base_tables() -> list:
+    """
+       Gets the tables' name in the database
+       :return: list of the name of the tables
+       """
     result = [item[0] for item in execute("SHOW TABLES;")]
     return result
 
 
-def is_table(table):
+def is_table(table: str) -> bool:
+    """
+    Checks if the table name passed to it is a table
+    :param table: A table name
+    :return: True if table exists, false if not
+    """
     return True if str(table) in get_data_base_tables() else False
 
 
-def get_table_structure(table):
+def get_table_structure(table) -> list:
+    """
+    Gets the table's columns names, types, and whether the field is a Primary key, Foreign key, or none
+    :param table: The table name
+    :return: List of the columns details
+    """
     return execute("SHOW COLUMNS FROM " + table + ";")
 
 
-def get_attributes(table):
+def get_attributes(table) -> list:
+    """
+    Gets the table's columns names
+    :param table: The table name
+    :return: List of the columns names
+    """
+
     return [item[0] for item in get_table_structure(table)]
 
 
@@ -45,7 +74,12 @@ def fn(att: dict, table: str):
     # execute("SELECT * FROM " + str(table) + " WHERE " + where[:-1] + ";")
 
 
-def construct_window(name: str):
+def construct_window(name: str) -> sg.Window:
+    """
+    Constructs a window with a name and type defined be the name
+    :param name: Name of the window
+    :return: The new window
+    """
     layout = []
     if name == "Mini Project Data-Base":
         layout = [[sg.Button(button_text='Insert', key="-INSERT-"), sg.Button(button_text='Update', key="-UPDATE-"),
@@ -98,6 +132,10 @@ def main():
 
 
 def insert():
+    """
+    This function is all about operating the insert window and its related activities
+    :return: None
+    """
     window = construct_window("Insert")
 
     inserted_successfully = False
@@ -151,6 +189,10 @@ def insert():
 
 
 def update():
+    """
+       This function is all about operating the update window and its related activities
+       :return: None
+    """
     window = construct_window("Update")
     updated_successfully = False
 
@@ -160,23 +202,27 @@ def update():
         event, values = window.read()
         if event == sg.WIN_CLOSED or event == 'Close':
             break
-        elif event == "table":
+        elif event == "table":  # Entered the table name, now moving to creating new line for each key of the table, to insert values
             if str(values['-TABLE-']) in get_data_base_tables():
                 columns = get_table_structure(values['-TABLE-'])
                 attributes = [item[0] for item in columns]
-                lst = [[item[0], item[1], "key"] if item[3] == 'PRI' else None for item in columns]
+                lst = [[item[0], item[1], "key"] if item[3] == 'PRI' else None for item in
+                       columns]  # Creates a list of all the keys of the table
                 window.extend_layout(window, [[sg.Text(text="Please enter the key(s) of the record you'd like to "
                                                             "update:")]])
+                print(lst)
                 for item in lst:
                     if item is not None:
                         window.extend_layout(window,
-                                             [[sg.Text(text=item[0]), sg.Input(key='-' + item[0] + '-'), ]])
-                window.extend_layout(window, [[sg.Button(button_text="Submit", enable_events=True, key="update")]])
+                                             [[sg.Text(text=item[0]), sg.Input(key='-' + item[
+                                                 0] + '-'), ]])  # Creates new line input field for each key
+                window.extend_layout(window, [[sg.Button(button_text="Submit", enable_events=True,
+                                                         key="update")]])  # New button to submit key's values
             else:
                 window.extend_layout(window, [[sg.Text('Table does not exist')]])
-        elif event == "update":
+        elif event == "update":  # User pressed on new submit button, now creating
             print(values)
-            fn(dict(zip(attributes, [values["-" + att + "-"] for att in attributes])), values["-Table-"])
+            fn(dict(zip(lst, [values["-" + att + "-"] for att in lst])), values["-Table-"])
             updated_successfully = True
             pop_up_window("Data Updated Successfully")
         if updated_successfully:
@@ -190,6 +236,10 @@ def update():
 
 
 def delete():
+    """
+        This function is all about operating the delete window and its related activities
+        :return: None
+    """
     window = construct_window("Delete")
     while True:
         event, values = window.read()
@@ -200,6 +250,10 @@ def delete():
 
 
 def get_record():
+    """
+        This function is all about operating the get-record window and its related activities
+        :return: None
+     """
     window = construct_window("Get Record")
     while True:
         event, values = window.read()
