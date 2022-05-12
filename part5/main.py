@@ -126,7 +126,7 @@ def main():
             get_record()
             event = ""
         if event == "-QUERIES-":
-            pass
+            run_procedures()
 
     window.close()
 
@@ -206,21 +206,25 @@ def update():
             if str(values['-TABLE-']) in get_data_base_tables():
                 columns = get_table_structure(values['-TABLE-'])
                 attributes = [item[0] for item in columns]
+
+                # Creates a list of all the keys of the table
                 lst = [[item[0], item[1], "key"] if item[3] == 'PRI' else None for item in
-                       columns]  # Creates a list of all the keys of the table
+                       columns]
+
                 window.extend_layout(window, [[sg.Text(text="Please enter the key(s) of the record you'd like to "
                                                             "update:")]])
                 print(lst)
-                for item in lst:
+                for item in lst:   # Creates new line input field for each key
                     if item is not None:
                         window.extend_layout(window,
                                              [[sg.Text(text=item[0]), sg.Input(key='-' + item[
-                                                 0] + '-'), ]])  # Creates new line input field for each key
+                                                 0] + '-'), ]])
+                # New button to submit key's values
                 window.extend_layout(window, [[sg.Button(button_text="Submit", enable_events=True,
-                                                         key="update")]])  # New button to submit key's values
+                                                         key="update")]])
             else:
                 window.extend_layout(window, [[sg.Text('Table does not exist')]])
-        elif event == "update":  # User pressed on new submit button, now creating
+        elif event == "update":  # User pressed on the submit button created on line 219, now creating
             print(values)
             fn(dict(zip(lst, [values["-" + att + "-"] for att in lst])), values["-Table-"])
             updated_successfully = True
@@ -259,8 +263,33 @@ def get_record():
         event, values = window.read()
         if event == sg.WIN_CLOSED or event == 'Close':
             break
-        elif event == "table":
+        elif event == "table":  # Entered the table name, now moving to creating new line for each key of the table, to get record
+            if str(values['-TABLE-']) in get_data_base_tables():
+                columns = get_table_structure(values['-TABLE-'])
+                attributes = [item[0] for item in columns]
+
+                # Creates a list of all the keys of the table
+                lst = [[item[0], item[1], "key"] if item[3] == 'PRI' else None for item in
+                       columns]
+
+                window.extend_layout(window, [[sg.Text(text="Please enter the key(s) of the record you'd like to "
+                                                            "get:")]])
+                print(lst)
+                for item in lst:  # Creates new line input field for each key
+                    if item is not None:
+                        window.extend_layout(window,
+                                             [[sg.Text(text=item[0]), sg.Input(key='-' + item[
+                                                 0] + '-'), ]])
+                # New button to submit key's values
+                window.extend_layout(window, [[sg.Button(button_text="Submit", enable_events=True,
+                                                         key="get")]])
+        elif event == "get":  # User has pressed on the submit button
             pass
+
+
+def run_procedures():
+    pass
+
 
 
 if __name__ == "__main__":
