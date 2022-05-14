@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 from sql import execute
 
 
-def pop_up_window(message):
+def pop_up_window(message: str):
     """
     Creates a new pop-up window with notification to the user
     :param message: The notification
@@ -16,6 +16,27 @@ def pop_up_window(message):
         if event == sg.WIN_CLOSED or event == 'Close':
             break
     window2.close()
+
+
+def confirm_delete(message: str, data: tuple):
+    """
+    Constructs a new confirmation window and displays it to the user, and waits to his response
+    :param data: The data to delete if the user confirms
+    :param message: The massage to the user
+    :return: Whether the user confirmed or not
+    """
+    layout2 = [[sg.Text(text=message[:-1] + ": " + str(data))],
+               [sg.Button(button_text="Yes", enable_events=True), sg.Button(button_text="No", enable_events=True)]]
+    window2 = sg.Window(message, layout2)
+
+    while True:
+        event, values = window2.read()
+        if event == sg.WIN_CLOSED or event == 'Close':
+            window2.close()
+            return False
+        elif event == "Yes" or event == "No":
+            window2.close()
+            return True if event == "Yes" else False
 
 
 def get_data_base_structure() -> str:
@@ -66,12 +87,36 @@ def get_attributes(table) -> list:
     return [item[0] for item in get_table_structure(table)]
 
 
-def fn(att: dict, table: str):
+def fetch_data(att: dict, table: str):
+    """
+    Constructs a query to send to the server
+
+    The query is to fetch data from a table where the data values equals to the values in att parameter
+
+    :param att: The columns names and the data
+    :param table: The table to fetch from
+    :return:
+    """
     where = ""
     for item in att:
-        where += item + "=" + att[item] + " "
-    print("SELECT * FROM " + str(table) + " WHERE " + where[:-1] + ";")
-    # execute("SELECT * FROM " + str(table) + " WHERE " + where[:-1] + ";")
+        where += item + " = " + att[item] + ", "
+    return execute("SELECT * FROM " + str(table) + " WHERE " + where[:-2] + ";")
+
+
+def delete_data(att: dict, table: str):
+    """
+    Constructs a query to send to the server
+
+    The query is to delete data from a table where the data values equals to the values in att parameter
+
+    :param att: The columns names and the data
+    :param table: The table to fetch from
+    :return:
+    """
+    where = ""
+    for item in att:
+        where += item + " = " + att[item] + ", "
+    return execute("DELETE FROM " + str(table) + " WHERE " + where[:-2] + ";")
 
 
 def construct_window(name: str) -> sg.Window:
@@ -81,7 +126,7 @@ def construct_window(name: str) -> sg.Window:
     :return: The new window
     """
     layout = []
-    if name == "Mini Project Data-Base":
+    if name == "Boarding house Data-Base":
         layout = [[sg.Button(button_text='Insert', key="-INSERT-"), sg.Button(button_text='Update', key="-UPDATE-"),
                    sg.Button(button_text='Delete', key="-DELETE-"),
                    sg.Button(button_text='Get Record', key="-PULL-DATA-"),
@@ -92,9 +137,9 @@ def construct_window(name: str) -> sg.Window:
                    sg.Button(button_text="Submit", enable_events=True, key="table")]]
     elif name == "Delete" or name == "Get Record":
         if name == "Delete":
-            txt = "What table do you want to delete records from? \n"
+            txt = "What table do you want to delete records from?"
         else:
-            txt = "What table do you want ot get records from? \n"
+            txt = "What table do you want to get records from?"
         layout = [[sg.Text(text=txt)],
                   [sg.Input(key='-TABLE-'), sg.Button(button_text="Submit", enable_events=True, key="table")]]
     return sg.Window(name, layout)
@@ -107,7 +152,7 @@ def main():
     sg.theme('DarkAmber')
 
     # Create the Window
-    window = construct_window("Mini Project Data-Base")
+    window = construct_window("Boarding house Data-Base")
     # Event Loop to process "events" and get the "values" of the inputs
     while True:
         event, values = window.read()
@@ -214,7 +259,7 @@ def update():
                 window.extend_layout(window, [[sg.Text(text="Please enter the key(s) of the record you'd like to "
                                                             "update:")]])
                 print(lst)
-                for item in lst:   # Creates new line input field for each key
+                for item in lst:  # Creates new line input field for each key
                     if item is not None:
                         window.extend_layout(window,
                                              [[sg.Text(text=item[0]), sg.Input(key='-' + item[
@@ -226,7 +271,7 @@ def update():
                 window.extend_layout(window, [[sg.Text('Table does not exist')]])
         elif event == "update":  # User pressed on the submit button created on line 219, now creating
             print(values)
-            fn(dict(zip(lst, [values["-" + att + "-"] for att in lst])), values["-Table-"])
+            fetch_data(dict(zip(lst, [values["-" + att + "-"] for att in lst])), values["-Table-"])
             updated_successfully = True
             pop_up_window("Data Updated Successfully")
         if updated_successfully:
@@ -245,25 +290,17 @@ def delete():
         :return: None
     """
     window = construct_window("Delete")
+
+    got_record = True
+
+    attributes = []
+    lst = []
+
     while True:
         event, values = window.read()
         if event == sg.WIN_CLOSED or event == 'Close':
             break
-        elif event == "table":
-            pass
-
-
-def get_record():
-    """
-        This function is all about operating the get-record window and its related activities
-        :return: None
-     """
-    window = construct_window("Get Record")
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event == 'Close':
-            break
-        elif event == "table":  # Entered the table name, now moving to creating new line for each key of the table, to get record
+        elif event == "table":  # Entered the table name, now moving to creating new line for each key of the table, to insert values
             if str(values['-TABLE-']) in get_data_base_tables():
                 columns = get_table_structure(values['-TABLE-'])
                 attributes = [item[0] for item in columns]
@@ -272,9 +309,7 @@ def get_record():
                 lst = [[item[0], item[1], "key"] if item[3] == 'PRI' else None for item in
                        columns]
 
-                window.extend_layout(window, [[sg.Text(text="Please enter the key(s) of the record you'd like to "
-                                                            "get:")]])
-                print(lst)
+                window.extend_layout(window, [[sg.Text(text="Please enter the key of the record you'd like to get:")]])
                 for item in lst:  # Creates new line input field for each key
                     if item is not None:
                         window.extend_layout(window,
@@ -282,14 +317,85 @@ def get_record():
                                                  0] + '-'), ]])
                 # New button to submit key's values
                 window.extend_layout(window, [[sg.Button(button_text="Submit", enable_events=True,
-                                                         key="get")]])
-        elif event == "get":  # User has pressed on the submit button
-            pass
+                                                         key="delete-record")]])
+            else:
+                window.extend_layout(window, [[sg.Text('Table does not exist')]])
+        elif event == "delete-record":  # User pressed on the submit button created on line 219, now to fetch data
+            keys: list = [item[0] for item in lst if item is not None]
+            keys_values: list = [values['-' + item[0] + '-'] for item in lst if item is not None]
+            att: dict = dict(zip(keys, keys_values))
+
+            result = fetch_data(att, values['-TABLE-'])
+
+            if confirm_delete("Are you sure you want to delete this record?", result):
+                try:
+                    delete_data(att, values['-TABLE-'])
+                except:
+                    pop_up_window("Key does not exist")
+
+                got_record = True
+                pop_up_window("Deleted data Successfully")
+        if got_record:
+            window.extend_layout(window, [[sg.Button(button_text="Close")]])
+
+
+def get_record():
+    """
+        This function is all about operating the get-record window and its related activities
+        :return: None
+     """
+    window = construct_window("Get Record")
+
+    got_record = True
+
+    attributes = []
+    lst = []
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED or event == 'Close':
+            break
+        elif event == "table":  # Entered the table name, now moving to creating new line for each key of the table, to insert values
+            if str(values['-TABLE-']) in get_data_base_tables():
+                columns = get_table_structure(values['-TABLE-'])
+                attributes = [item[0] for item in columns]
+
+                # Creates a list of all the keys of the table
+                lst = [[item[0], item[1], "key"] if item[3] == 'PRI' else None for item in
+                       columns]
+
+                window.extend_layout(window, [[sg.Text(text="Please enter the key of the record you'd like to get:")]])
+                for item in lst:  # Creates new line input field for each key
+                    if item is not None:
+                        window.extend_layout(window,
+                                             [[sg.Text(text=item[0]), sg.Input(key='-' + item[
+                                                 0] + '-'), ]])
+                # New button to submit key's values
+                window.extend_layout(window, [[sg.Button(button_text="Submit", enable_events=True,
+                                                         key="get-record")]])
+            else:
+                window.extend_layout(window, [[sg.Text('Table does not exist')]])
+        elif event == "get-record":  # User pressed on the submit button created on line 219, now to fetch data
+            keys: list = [item[0] for item in lst if item is not None]
+            keys_values: list = [values['-' + item[0] + '-'] for item in lst if item is not None]
+            att: dict = dict(zip(keys, keys_values))
+
+            result = fetch_data(att, values['-TABLE-'])
+
+            if len(result) > 0:
+                for index in range(len(result)):  # Creates new line for each record
+                    window.extend_layout(window,
+                                         [[sg.Text(text=attributes[index] + "=" + str(result[index]))]])
+            else:
+                window.extend_layout(window,
+                                     [[sg.Text(text="Record does not exist!")]])
+            got_record = True
+            pop_up_window("Fetched data Successfully")
+        if got_record:
+            window.extend_layout(window, [[sg.Button(button_text="Close")]])
 
 
 def run_procedures():
     pass
-
 
 
 if __name__ == "__main__":
