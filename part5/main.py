@@ -119,6 +119,41 @@ def delete_data(att: dict, table: str):
     return execute("DELETE FROM " + str(table) + " WHERE " + where[:-2] + ";")
 
 
+def update_data(att: dict, table: str, keys: dict):
+    """
+    Constructs a query to send to the server
+
+    The query is to delete data from a table where the data values equals to the values in att parameter
+
+    :param keys: Keys of table
+    :param att: The columns names and the data
+    :param table: The table to fetch from
+    :return:
+    """
+    to_set = ""
+    print(att)
+    for item in att:
+        to_set += item + " = " + (str(att[item]) if (att[item]).isdigit() else "'" + att[item] + "'") + ", "
+
+    where = "WHERE "
+    for item in keys:
+        where += item + " = " + (str(att[item]) if (att[item]).isdigit() else "'" + att[item] + "'") + ", "
+    print("UPDATE " + str(table) + " SET " + to_set[:-2] + " " + where[:-2] + ";")
+    return execute("UPDATE " + str(table) + " SET " + to_set[:-2] + " " + where[:-2] + ";")
+
+
+def insert_data(data:dict, table:str):
+    middle = ""
+    for item in data:
+        if item != '-TABLE-':
+            if all(x.isalpha() or x.isspace() for x in data[item]):
+                middle += "'" + data[item] + "' ,"
+            else:
+                middle += data[item] + " ,"
+
+    return execute("INSERT INTO " + table + " VALUES(" + middle[:-2] + ");")
+
+
 def construct_window(name: str) -> sg.Window:
     """
     Constructs a window with a name and type defined be the name
@@ -218,19 +253,14 @@ def insert():
             if "Total number" in response:
                 inserted_successfully = True
                 pop_up_window("Data Inserted Successfully")
+                break
             elif '23000' in response:
                 pop_up_window("Key already Exists")
             elif '22007' in response:
                 pop_up_window("Incorrect data types")
 
         if inserted_successfully:
-            window.extend_layout(window, [[sg.Button(button_text="Close")]])
-
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event == 'Close':
             break
-    window.close()
 
 
 def update():
@@ -270,12 +300,46 @@ def update():
             else:
                 window.extend_layout(window, [[sg.Text('Table does not exist')]])
         elif event == "update":  # User pressed on the submit button created on line 219, now creating
-            print(values)
-            fetch_data(dict(zip(lst, [values["-" + att + "-"] for att in lst])), values["-Table-"])
+            keys: list = [item[0] for item in lst if item is not None]
+            keys_values: list = [values['-' + item[0] + '-'] for item in lst if item is not None]
+            att: dict = dict(zip(keys, keys_values))
+
+            data = fetch_data(att, values['-TABLE-'])
+
+            if len(data) > 0:
+                window.extend_layout(window,
+                                     [[sg.Text(text="Data to update")]])
+                for index in range(len(data)):  # Creates new line for each record
+                    window.extend_layout(window,
+                                         [[sg.Text(text=attributes[index] + "=" + str(data[index]))]])
+            else:
+                window.extend_layout(window,
+                                     [[sg.Text(text="Record does not exist!")]])
+
+            window.extend_layout(window,
+                                 [[sg.Text(text="Enter the data with updates:"), sg.Input(key='UPDATED_DATA')],
+                                  [sg.Button(button_text="Submit", enable_events=True, key="updated")]
+                                  ])
+            keys: list = [item[0] for item in lst if item is not None]
+            keys_values: list = [values['-' + item[0] + '-'] for item in lst if item is not None]
+            att: dict = dict(zip(keys, keys_values))
+
+        elif event == "updated":
+            to_update = dict(zip(attributes, [item for item in tuple(str(values["UPDATED_DATA"]).split(","))]))
+
+            keys: list = [item[0] for item in lst if item is not None]
+            keys_values: list = [values['-' + item[0] + '-'] for item in lst if item is not None]
+            keys_dict: dict = dict(zip(keys, keys_values))
+
+            result = update_data(to_update, values['-TABLE-'], keys_dict)
+
+            print(result)
+
             updated_successfully = True
             pop_up_window("Data Updated Successfully")
         if updated_successfully:
             window.extend_layout(window, [[sg.Button(button_text="Close")]])
+            break
 
     while True:
         event, values = window.read()
@@ -337,6 +401,7 @@ def delete():
                 pop_up_window("Deleted data Successfully")
         if got_record:
             window.extend_layout(window, [[sg.Button(button_text="Close")]])
+            break
 
 
 def get_record():
@@ -392,6 +457,7 @@ def get_record():
             pop_up_window("Fetched data Successfully")
         if got_record:
             window.extend_layout(window, [[sg.Button(button_text="Close")]])
+            break
 
 
 def run_procedures():
