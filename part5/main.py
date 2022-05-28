@@ -1,10 +1,11 @@
 import PySimpleGUI as sg
-from sql import execute
+from sql import *
 
 
 def pop_up_window(message: str):
     """
     Creates a new pop-up window with notification to the user
+
     :param message: The notification
     :return: None
     """
@@ -21,6 +22,7 @@ def pop_up_window(message: str):
 def confirm_delete(message: str, data: tuple):
     """
     Constructs a new confirmation window and displays it to the user, and waits to his response
+
     :param data: The data to delete if the user confirms
     :param message: The massage to the user
     :return: Whether the user confirmed or not
@@ -39,133 +41,20 @@ def confirm_delete(message: str, data: tuple):
             return True if event == "Yes" else False
 
 
-def get_data_base_structure() -> str:
-    """
-    Gets the tables' structure in the database
-    :return: list of the structure of the tables
-    """
-    structure = ""
-    for table in get_data_base_tables():
-        structure += get_table_structure(table)
-    return structure
-
-
-def get_data_base_tables() -> list:
-    """
-       Gets the tables' name in the database
-       :return: list of the name of the tables
-       """
-    result = [item[0] for item in execute("SHOW TABLES;")]
-    return result
-
-
-def is_table(table: str) -> bool:
-    """
-    Checks if the table name passed to it is a table
-    :param table: A table name
-    :return: True if table exists, false if not
-    """
-    return True if str(table) in get_data_base_tables() else False
-
-
-def get_table_structure(table) -> list:
-    """
-    Gets the table's columns names, types, and whether the field is a Primary key, Foreign key, or none
-    :param table: The table name
-    :return: List of the columns details
-    """
-    return execute("SHOW COLUMNS FROM " + table + ";")
-
-
-def get_attributes(table) -> list:
-    """
-    Gets the table's columns names
-    :param table: The table name
-    :return: List of the columns names
-    """
-
-    return [item[0] for item in get_table_structure(table)]
-
-
-def fetch_data(att: dict, table: str):
-    """
-    Constructs a query to send to the server
-
-    The query is to fetch data from a table where the data values equals to the values in att parameter
-
-    :param att: The columns names and the data
-    :param table: The table to fetch from
-    :return:
-    """
-    where = ""
-    for item in att:
-        where += item + " = " + att[item] + ", "
-    return execute("SELECT * FROM " + str(table) + " WHERE " + where[:-2] + ";")
-
-
-def delete_data(att: dict, table: str):
-    """
-    Constructs a query to send to the server
-
-    The query is to delete data from a table where the data values equals to the values in att parameter
-
-    :param att: The columns names and the data
-    :param table: The table to fetch from
-    :return:
-    """
-    where = ""
-    for item in att:
-        where += item + " = " + att[item] + ", "
-    return execute("DELETE FROM " + str(table) + " WHERE " + where[:-2] + ";")
-
-
-def update_data(att: dict, table: str, keys: dict):
-    """
-    Constructs a query to send to the server
-
-    The query is to delete data from a table where the data values equals to the values in att parameter
-
-    :param keys: Keys of table
-    :param att: The columns names and the data
-    :param table: The table to fetch from
-    :return:
-    """
-    to_set = ""
-    print(att)
-    for item in att:
-        to_set += item + " = " + (str(att[item]) if (att[item]).isdigit() else "'" + att[item] + "'") + ", "
-
-    where = "WHERE "
-    for item in keys:
-        where += item + " = " + (str(att[item]) if (att[item]).isdigit() else "'" + att[item] + "'") + ", "
-    print("UPDATE " + str(table) + " SET " + to_set[:-2] + " " + where[:-2] + ";")
-    return execute("UPDATE " + str(table) + " SET " + to_set[:-2] + " " + where[:-2] + ";")
-
-
-def insert_data(data:dict, table:str):
-    middle = ""
-    for item in data:
-        if item != '-TABLE-':
-            if all(x.isalpha() or x.isspace() for x in data[item]):
-                middle += "'" + data[item] + "' ,"
-            else:
-                middle += data[item] + " ,"
-
-    return execute("INSERT INTO " + table + " VALUES(" + middle[:-2] + ");")
-
-
 def construct_window(name: str) -> sg.Window:
     """
     Constructs a window with a name and type defined be the name
+
     :param name: Name of the window
     :return: The new window
     """
     layout = []
     if name == "Boarding house Data-Base":
-        layout = [[sg.Button(button_text='Insert', key="-INSERT-"), sg.Button(button_text='Update', key="-UPDATE-"),
+        layout = [[sg.Button(button_text='Insert', key="-INSERT-"),
+                   sg.Button(button_text='Update', key="-UPDATE-"),
                    sg.Button(button_text='Delete', key="-DELETE-"),
                    sg.Button(button_text='Get Record', key="-PULL-DATA-"),
-                   sg.Button(button_text='Queries', key="-QUERIES-")],
+                   sg.Button(button_text='Procedures', key="-PROCEDURES-")],
                   [sg.Button('Close')]]
     elif name == "Insert" or name == "Update":
         layout = [[sg.Text(text="Table"), sg.Input(key='-TABLE-'),
@@ -177,6 +66,12 @@ def construct_window(name: str) -> sg.Window:
             txt = "What table do you want to get records from?"
         layout = [[sg.Text(text=txt)],
                   [sg.Input(key='-TABLE-'), sg.Button(button_text="Submit", enable_events=True, key="table")]]
+    elif name == "Procedures":
+        layout = [[sg.Button(button_text='End the day', key="-MORE_HOURS-"), sg.Text(text="Adds 12 hours of work to "
+                                                                                          "each employee")],
+                  [sg.Button(button_text='Calculate salary', key="-SALARY-"), sg.Text(text="Calculates the salary of "
+                                                                                           "each employee")],
+                  [sg.Button('Close')]]
     return sg.Window(name, layout)
 
 
@@ -205,7 +100,7 @@ def main():
         if event == "-PULL-DATA-":
             get_record()
             event = ""
-        if event == "-QUERIES-":
+        if event == "-PROCEDURES-":
             run_procedures()
 
     window.close()
@@ -214,6 +109,7 @@ def main():
 def insert():
     """
     This function is all about operating the insert window and its related activities
+
     :return: None
     """
     window = construct_window("Insert")
@@ -260,12 +156,14 @@ def insert():
                 pop_up_window("Incorrect data types")
 
         if inserted_successfully:
+            pop_up_window("Data Updated Successfully")
             break
 
 
 def update():
     """
        This function is all about operating the update window and its related activities
+
        :return: None
     """
     window = construct_window("Update")
@@ -302,22 +200,23 @@ def update():
         elif event == "update":  # User pressed on the submit button created on line 219, now creating
             keys: list = [item[0] for item in lst if item is not None]
             keys_values: list = [values['-' + item[0] + '-'] for item in lst if item is not None]
-            att: dict = dict(zip(keys, keys_values))
+            att = [[keys[index], keys_values[index]] for index in range(len(keys))]
 
+            print(att)
             data = fetch_data(att, values['-TABLE-'])
-
+            print(data)
             if len(data) > 0:
                 window.extend_layout(window,
                                      [[sg.Text(text="Data to update")]])
                 for index in range(len(data)):  # Creates new line for each record
                     window.extend_layout(window,
-                                         [[sg.Text(text=attributes[index] + "=" + str(data[index]))]])
+                                     [[sg.Text(text=attributes[index] + "=" + str(data[index]))]])
             else:
                 window.extend_layout(window,
                                      [[sg.Text(text="Record does not exist!")]])
 
             window.extend_layout(window,
-                                 [[sg.Text(text="Enter the data with updates:"), sg.Input(key='UPDATED_DATA')],
+                                 [[sg.Text(text="Enter the data with updates (NO ' or ( or ) needed):"), sg.Input(key='UPDATED_DATA')],
                                   [sg.Button(button_text="Submit", enable_events=True, key="updated")]
                                   ])
             keys: list = [item[0] for item in lst if item is not None]
@@ -337,8 +236,8 @@ def update():
 
             updated_successfully = True
             pop_up_window("Data Updated Successfully")
-        if updated_successfully:
-            window.extend_layout(window, [[sg.Button(button_text="Close")]])
+            if updated_successfully:
+                window.extend_layout(window, [[sg.Button(button_text="Close")]])
             break
 
     while True:
@@ -351,11 +250,12 @@ def update():
 def delete():
     """
         This function is all about operating the delete window and its related activities
+
         :return: None
     """
     window = construct_window("Delete")
 
-    got_record = True
+    got_record = False
 
     attributes = []
     lst = []
@@ -382,15 +282,17 @@ def delete():
                 # New button to submit key's values
                 window.extend_layout(window, [[sg.Button(button_text="Submit", enable_events=True,
                                                          key="delete-record")]])
+                print("GOOOD")
             else:
                 window.extend_layout(window, [[sg.Text('Table does not exist')]])
-        elif event == "delete-record":  # User pressed on the submit button created on line 219, now to fetch data
+        elif event == "delete-record":  # User pressed on the submit button created few lines ago, now to fetch data
             keys: list = [item[0] for item in lst if item is not None]
             keys_values: list = [values['-' + item[0] + '-'] for item in lst if item is not None]
-            att: dict = dict(zip(keys, keys_values))
+            att = [[keys[index], keys_values[index]] for index in range(len(keys))]
 
             result = fetch_data(att, values['-TABLE-'])
-
+            print(result)
+            att = dict(zip(keys, keys_values))
             if confirm_delete("Are you sure you want to delete this record?", result):
                 try:
                     delete_data(att, values['-TABLE-'])
@@ -403,15 +305,18 @@ def delete():
             window.extend_layout(window, [[sg.Button(button_text="Close")]])
             break
 
+    window.close()
+
 
 def get_record():
     """
         This function is all about operating the get-record window and its related activities
+
         :return: None
      """
     window = construct_window("Get Record")
 
-    got_record = True
+    got_record = False
 
     attributes = []
     lst = []
@@ -425,8 +330,7 @@ def get_record():
                 attributes = [item[0] for item in columns]
 
                 # Creates a list of all the keys of the table
-                lst = [[item[0], item[1], "key"] if item[3] == 'PRI' else None for item in
-                       columns]
+                lst = [[item[0], item[1], "key"] if item[3] == 'PRI' else None for item in columns]
 
                 window.extend_layout(window, [[sg.Text(text="Please enter the key of the record you'd like to get:")]])
                 for item in lst:  # Creates new line input field for each key
@@ -442,12 +346,15 @@ def get_record():
         elif event == "get-record":  # User pressed on the submit button created on line 219, now to fetch data
             keys: list = [item[0] for item in lst if item is not None]
             keys_values: list = [values['-' + item[0] + '-'] for item in lst if item is not None]
-            att: dict = dict(zip(keys, keys_values))
+            att = [[keys[index], keys_values[index]] for index in range(len(keys))]
 
             result = fetch_data(att, values['-TABLE-'])
 
+            print(result)
+            print(att)
             if len(result) > 0:
                 for index in range(len(result)):  # Creates new line for each record
+                    print(index)
                     window.extend_layout(window,
                                          [[sg.Text(text=attributes[index] + "=" + str(result[index]))]])
             else:
@@ -461,7 +368,44 @@ def get_record():
 
 
 def run_procedures():
-    pass
+    window = construct_window("Procedures")
+
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED or event == 'Close':
+            break
+        elif event == "-MORE_HOURS-":
+            data = get_columns("Employee", ["id", "hours"])
+            ids = [id[0] for id in data]
+            key = [key[0] for key in get_table_structure("Employee") if key[3] == "PRI"]
+            data = [id[1] for id in data]
+            hours_data = [["hours", data[index]] for index in range(len(data))]
+            if len(ids) > 0:
+                for id in ids:
+                    dic = dict(zip(key, [id]))
+                    print("banana {}".format(dic["id"]))
+                    update_data(dict(zip([hours_data[ids.index(id)][0]], [hours_data[ids.index(id)][1] + 12])),
+                                "Employee", dict(zip(key, [id])))
+
+        elif event == "-SALARY-":
+            data = get_columns("Employee", ["id", "hours", "hourlyWage"])
+            ids = [id[0] for id in data]
+            hours = [id[1] for id in data]
+            hourly_wage = [id[2] for id in data]
+            salary = []
+            if len(data) > 0:
+                for index in range(len(data)):
+                    salary.append([ids[index],float(hours[index])*float(hourly_wage[index])])
+            print(salary)
+            wages = []
+            for item in salary:
+                wages.append([str(item[0]) + " gets " + str(item[1])])
+            print(wages)
+            window.extend_layout(window, [[sg.Text('The wages are:')]])
+            for wage in wages:
+                window.extend_layout(window, [[sg.Text(str(wage[0]))]])
+
+    window.close()
 
 
 if __name__ == "__main__":

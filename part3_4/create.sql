@@ -1,16 +1,16 @@
 create table Room(
-    room_id INT NOT NULL PRIMARY KEY,
+    roomId INT NOT NULL PRIMARY KEY,
     name varchar(30),
-    max_people INT NOT NULL,
+    maxPeople INT NOT NULL,
     price INT NOT NULL
 );
 
 create table Customer(
-  customer_id INT,
-  customer_name varchar(30),
+  customerId INT,
+  customerName varchar(30),
   age INT,
   isMale BIT NOT NULL,
-    constraint PRIMARY KEY (customer_id)
+    constraint PRIMARY KEY (customerId)
 );
 
 CREATE TABLE Employee(
@@ -20,27 +20,28 @@ CREATE TABLE Employee(
     isMale BIT NOT NULL,
     role VARCHAR(20),
     bankAccount VARCHAR(20),
-    salary INT NOT NULL,
+    hourlyWage INT NOT NULL,
+    hours INT NOT NULL,
     constraint PRIMARY KEY (id)
 );
 
 CREATE TABLE RoomOrder(
     OrderId INT,
     amount INT,
-    room_number INT,
-    customer_id INT,
+    roomNumber INT,
+    customerId INT,
     constraint PRIMARY KEY (OrderId),
-    CONSTRAINT FOREIGN KEY (room_number) REFERENCES Room(room_id) ON DELETE CASCADE,
-    CONSTRAINT FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE
+    CONSTRAINT FOREIGN KEY (roomNumber) REFERENCES Room(roomId) ON DELETE CASCADE,
+    CONSTRAINT FOREIGN KEY (customerId) REFERENCES Customer(customerId) ON DELETE CASCADE
 );
 
 CREATE TABLE Maintain(
-    room_id INT,
-    emp_id INT,
-    CONSTRAINT FOREIGN KEY (room_id)
-        REFERENCES Room(room_id)
+    roomId INT,
+    empId INT,
+    CONSTRAINT FOREIGN KEY (roomId)
+        REFERENCES Room(roomId)
         ON DELETE CASCADE,
-    CONSTRAINT FOREIGN KEY (emp_id) REFERENCES Employee(id) ON DELETE CASCADE
+    CONSTRAINT FOREIGN KEY (empId) REFERENCES Employee(id) ON DELETE CASCADE
 );
 
 CREATE TABLE diningRoomOrder(
@@ -55,35 +56,35 @@ CREATE TABLE diningRoomOrder(
 );
 
 CREATE TABLE suppliers_orders(
-    order_id     INT(4)      NOT NULL,
-    prod_name    VARCHAR(30) NOT NULL,
+    orderId     INT(4)      NOT NULL,
+    prodName    VARCHAR(30) NOT NULL,
     amount       INT(2)      NOT NULL,
-    suppliers_id INT(4)      NOT NULL,
+    suppliersId INT(4)      NOT NULL,
     priority     INT(1)      NOT NULL,
-    CONSTRAINT PRIMARY KEY (prod_name, order_id)
+    CONSTRAINT PRIMARY KEY (prodName, orderId)
 );
 
 CREATE TABLE dish_prices(
-    dish_name VARCHAR(30) NOT NULL ,
+    dishName VARCHAR(30) NOT NULL ,
     price FLOAT(1) NOT NULL ,
     rating INT (1) NOT NULL ,
-    CONSTRAINT PRIMARY KEY (dish_name)
+    CONSTRAINT PRIMARY KEY (dishName)
 );
 
 CREATE TABLE dish_details(
-    dish_name VARCHAR(30) NOT NULL,
-    prod_name VARCHAR(30) NOT NULL,
-    PRIMARY KEY (dish_name, prod_name),
-    CONSTRAINT FOREIGN KEY (dish_name) REFERENCES dish_prices(dish_name) ON DELETE CASCADE,
-    CONSTRAINT FOREIGN KEY (prod_name) REFERENCES suppliers_orders(prod_name) ON DELETE CASCADE
+    dishName VARCHAR(30) NOT NULL,
+    prodName VARCHAR(30) NOT NULL,
+    PRIMARY KEY (dishName, prodName),
+    CONSTRAINT FOREIGN KEY (dishName) REFERENCES dish_prices(dishName) ON DELETE CASCADE,
+    CONSTRAINT FOREIGN KEY (prodName) REFERENCES suppliers_orders(prodName) ON DELETE CASCADE
 );
 
 CREATE TABLE ingredients(
-    prod_name VARCHAR(30) NOT NULL,
+    prodName VARCHAR(30) NOT NULL,
     amount    INT(2)      NOT NULL,
     allergen  VARCHAR(30) DEFAULT NULL,
     vegan     BOOLEAN     NOT NULL,
-    CONSTRAINT PRIMARY KEY (prod_name),
-    CONSTRAINT FOREIGN KEY (prod_name) REFERENCES suppliers_orders(prod_name) ON DELETE CASCADE
+    CONSTRAINT PRIMARY KEY (prodName),
+    CONSTRAINT FOREIGN KEY (prodName) REFERENCES suppliers_orders(prodName) ON DELETE CASCADE
 );
 
