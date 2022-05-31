@@ -79,7 +79,7 @@ def main():
     bigger_font = ("Arial", 11)
     sg.set_options(font=bigger_font)
 
-    sg.theme('DarkAmber')
+    sg.theme('BrightColors')
 
     # Create the Window
     window = construct_window("Boarding house Data-Base")
@@ -145,8 +145,8 @@ def insert():
             suffix = ");"
             command = prefix + middle[:-2] + suffix
             response = execute(command)
-            print("\n\n")
-            if "Total number" in response:
+            print(response)
+            if not response:
                 inserted_successfully = True
                 pop_up_window("Data Inserted Successfully")
                 break
