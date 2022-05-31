@@ -76,7 +76,7 @@ def construct_window(name: str) -> sg.Window:
 
 
 def main():
-    bigger_font = ("Arial", 11)
+    bigger_font = ("Fixedsys", 11)
     sg.set_options(font=bigger_font)
 
     sg.theme('BrightColors')
