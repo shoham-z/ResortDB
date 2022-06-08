@@ -379,11 +379,9 @@ def run_procedures():
             ids = [id[0] for id in data]
             key = [key[0] for key in get_table_structure("Employee") if key[3] == "PRI"]
             data = [id[1] for id in data]
-            hours_data = [["hours", data[index]] for index in range(len(data))]
+            hours_data = [["hours", data[index]] for index in range(len(data))]# [["hours",15],["hours",40],["hours",74]]
             if len(ids) > 0:
                 for id in ids:
-                    dic = dict(zip(key, [id]))
-                    print("banana {}".format(dic["id"]))
                     update_data(dict(zip([hours_data[ids.index(id)][0]], [hours_data[ids.index(id)][1] + 12])),
                                 "Employee", dict(zip(key, [id])))
 
