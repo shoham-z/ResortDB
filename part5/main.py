@@ -79,7 +79,7 @@ def main():
     bigger_font = ("Fixedsys", 11)
     sg.set_options(font=bigger_font)
 
-    sg.theme('BrightColors')
+    sg.theme('DarkTeal7')
 
     # Create the Window
     window = construct_window("Boarding house Data-Base")
